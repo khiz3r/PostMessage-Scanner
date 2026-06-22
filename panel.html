@@ -4,34 +4,43 @@
 <meta charset="utf-8">
 <style>
     /* Dark theme */
+    * { box-sizing: border-box; }
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
     body {
         background: #1e1e1e;
         color: #d4d4d4;
         font-family: 'Segoe UI', monospace;
-        margin: 10px;
+        display: flex;
+        flex-direction: column;
     }
-    button {
-        background: #2d2d2d;
-        color: #d4d4d4;
-        border: 1px solid #444;
-        margin: 5px;
-        padding: 8px 12px;
-        cursor: pointer;
-        border-radius: 3px;
+    #toolbar {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 6px;
+        background: #252526;
+        border-bottom: 1px solid #3a3a3a;
+        flex-shrink: 0;
     }
-    button:hover {
-        background: #3a3a3a;
-    }
-    button:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
+    #toolbar .sep {
+        width: 1px;
+        height: 18px;
+        background: #444;
+        margin: 0 2px;
     }
     #status {
-        margin: 5px 0;
-        padding: 5px 10px;
+        margin-left: auto;
+        padding: 2px 8px;
         border-radius: 3px;
-        display: inline-block;
-        font-size: 13px;
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 55%;
     }
     #status.ok {
         background: #1e3a1e;
@@ -45,10 +54,31 @@
         background: #1e2a3a;
         color: #9cdcfe;
     }
+    button {
+        background: #2d2d2d;
+        color: #d4d4d4;
+        border: 1px solid #444;
+        padding: 3px 10px;
+        cursor: pointer;
+        border-radius: 3px;
+        font-size: 12px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    button:hover {
+        background: #3a3a3a;
+    }
+    button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+    #table-wrap {
+        flex: 1;
+        overflow-y: auto;
+    }
     table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 10px;
     }
     th, td {
         border: 1px solid #444;
@@ -58,6 +88,9 @@
     th {
         background: #2d2d2d;
         color: #b0b0b0;
+        position: sticky;
+        top: 0;
+        z-index: 1;
     }
     tr:hover {
         background: #2a2a2a;
@@ -116,20 +149,23 @@
 </head>
 <body>
 
-<button id="start">Start Scan</button>
-<button id="stop" disabled>Stop Scan</button>
-<button id="clear">Clear Results</button>
-<button id="export">Export JSON</button>
-<div id="status"></div>
+<div id="toolbar">
+    <button id="start">▶ Start</button>
+    <button id="stop" disabled>■ Stop</button>
+    <div class="sep"></div>
+    <button id="clear">Clear</button>
+    <button id="export">Export JSON</button>
+    <div id="status"></div>
+</div>
 
-<hr>
-
+<div id="table-wrap">
 <table>
 <thead>
 <tr><th style="width:28px">#</th><th>Type</th><th>URL</th><th>Line:Col</th><th>Details</th><th>Action</th></tr>
 </thead>
 <tbody id="results"></tbody>
 </table>
+</div>
 
 <script src="libs/babel.min.js"></script>
 <script src="libs/acorn.js"></script>
