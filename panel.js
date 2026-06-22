@@ -62,22 +62,34 @@ window.addEventListener('load', () => {
     // Source map cache: url -> parsed mappings (or null if unavailable)
     const sourceMapCache = {};
 
+    // CDP-provided sourceMapURL per script url, populated in onDebuggerEvent.
+    // Avoids re-fetching the entire JS file just to find the sourceMappingURL comment.
+    const scriptSourceMapUrls = {};
+
     // Fetch and parse the source map for a given JS url.
-    // Returns an array of decoded VLQ segments or null.
+    // Returns a parsed source map object or null.
     async function fetchSourceMap(jsUrl) {
+        // Skip inline scripts, blob URLs, extension pages, or anything non-http
+        if (!jsUrl || !/^https?:\/\//.test(jsUrl)) return null;
+
         if (jsUrl in sourceMapCache) return sourceMapCache[jsUrl];
         sourceMapCache[jsUrl] = null; // mark as attempted
 
         try {
-            const res = await fetch(jsUrl);
-            if (!res.ok) return null;
-            const text = await res.text();
+            // Prefer the sourceMapURL handed to us by CDP during scriptParsed —
+            // using it avoids downloading the entire JS file just to find the comment.
+            let mapUrl = scriptSourceMapUrls[jsUrl] || null;
 
-            // Look for //# sourceMappingURL= at the end of the file
-            const match = text.match(/\/\/[#@]\s*sourceMappingURL=([^\s]+)/);
-            if (!match) return null;
+            if (!mapUrl) {
+                // Fallback: fetch the JS file and scan for the sourceMappingURL comment
+                const res = await fetch(jsUrl);
+                if (!res.ok) return null;
+                const text = await res.text();
+                const match = text.match(/\/\/[#@]\s*sourceMappingURL=([^\s]+)/);
+                if (!match) return null;
+                mapUrl = match[1];
+            }
 
-            let mapUrl = match[1];
             if (mapUrl.startsWith("data:")) {
                 // Inline base64 source map
                 const b64 = mapUrl.split(",")[1];
@@ -193,17 +205,24 @@ window.addEventListener('load', () => {
             const type = this.dataset.type;
             const details = this.dataset.details;
 
-            // Try to resolve original source location via source map
+            // Try to resolve original source location via source map.
+            // fetchSourceMap guards non-http URLs internally, but we also wrap in
+            // try/catch here so a fetch error (network, CORS, etc.) never crashes
+            // the click handler and leaves the button silently broken.
             let location = `${url}:${line}:${col}`;
             let originalLocation = null;
 
-            const map = await fetchSourceMap(url);
-            if (map) {
-                // AST loc is 1-based line, 0-based col; source map decode needs 0-based both
-                const resolved = resolveSourceMap(map, line - 1, col);
-                if (resolved) {
-                    originalLocation = `${resolved.source}:${resolved.line}:${resolved.col}`;
+            try {
+                const map = await fetchSourceMap(url);
+                if (map) {
+                    // AST loc is 1-based line, 0-based col; source map decode needs 0-based both
+                    const resolved = resolveSourceMap(map, line - 1, col);
+                    if (resolved) {
+                        originalLocation = `${resolved.source}:${resolved.line}:${resolved.col}`;
+                    }
                 }
+            } catch (e) {
+                // Source map fetch failed — proceed with generated location only
             }
 
             // V8/DevTools stack frames display columns 1-based; our AST column is
@@ -290,6 +309,14 @@ window.addEventListener('load', () => {
     async function onDebuggerEvent(source, method, params) {
         if (method !== "Debugger.scriptParsed") return;
         if (!debuggerReady) return;
+
+        // CDP gives us the sourceMapURL for free — cache it now so the Log button
+        // can resolve source maps without re-fetching the entire JS file later.
+        if (params.sourceMapURL && params.url && /^https?:\/\//.test(params.url)) {
+            scriptSourceMapUrls[params.url] = params.sourceMapURL.startsWith("data:")
+                ? params.sourceMapURL
+                : new URL(params.sourceMapURL, params.url).href;
+        }
 
         const target = { tabId: chrome.devtools.inspectedWindow.tabId };
 
