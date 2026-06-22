@@ -43,7 +43,7 @@ The scanner starts automatically when you open the panel.
 
 Click **Log** on any row to send a clickable source link to the page console.
 
-The scanner re-attaches automatically on page navigation — no need to click Start Scan again.
+
 
 ---
 
