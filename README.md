@@ -17,7 +17,7 @@ A Chrome DevTools extension for static analysis of `postMessage` sinks and `mess
 ## Install
 
 1. Clone or download this repo
-2. Run `npm install` to pull acorn / babel dependencies into `node_modules`
+2. Run `mkdir libs && npm install` to pull acorn / babel dependencies into `node_modules`
 3. Copy the required libs into `libs/`:
    ```
    libs/babel.min.js      ← node_modules/@babel/standalone/babel.min.js
