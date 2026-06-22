@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@babel/parser": "^8.0.0",
+    "@babel/standalone": "^8.0.2",
+    "@babel/traverse": "^8.0.0",
+    "acorn": "^8.17.0",
+    "acorn-loose": "^8.5.2",
+    "acorn-walk": "^8.3.5"
+  }
+}

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    /* Dark theme */
+    body {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        font-family: 'Segoe UI', monospace;
+        margin: 10px;
+    }
+    button {
+        background: #2d2d2d;
+        color: #d4d4d4;
+        border: 1px solid #444;
+        margin: 5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+    button:hover {
+        background: #3a3a3a;
+    }
+    button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+    #status {
+        margin: 5px 0;
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        font-size: 13px;
+    }
+    #status.ok {
+        background: #1e3a1e;
+        color: #8bc34a;
+    }
+    #status.error {
+        background: #3a1e1e;
+        color: #f48771;
+    }
+    #status.info {
+        background: #1e2a3a;
+        color: #9cdcfe;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    th, td {
+        border: 1px solid #444;
+        padding: 6px;
+        text-align: left;
+    }
+    th {
+        background: #2d2d2d;
+        color: #b0b0b0;
+    }
+    tr:hover {
+        background: #2a2a2a;
+    }
+    td {
+        color: #d4d4d4;
+    }
+    .vuln-url {
+        color: #9cdcfe;
+        word-break: break-all;
+    }
+    .vuln-line {
+        color: #b5cea8;
+    }
+    .vuln-details {
+        color: #d7ba7d;
+    }
+    .vuln-num {
+        color: #555;
+        font-size: 11px;
+        text-align: center;
+        white-space: nowrap;
+        width: 28px;
+        user-select: none;
+    }
+    .vuln-type {
+        white-space: nowrap;
+    }
+    .type-icon {
+        font-size: 15px;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+    .type-label {
+        font-weight: bold;
+        vertical-align: middle;
+    }
+    .type-postmessage .type-label { color: #f48771; }
+    .type-listener    .type-label { color: #ce9178; }
+    .type-weakorigin  .type-label { color: #dcdcaa; }
+    .type-unresolved  .type-label { color: #9cdcfe; }
+    .btn-log {
+        background: #3d3d3d;
+        border: 1px solid #666;
+        padding: 2px 8px;
+        border-radius: 3px;
+        cursor: pointer;
+        color: #ccc;
+        font-size: 12px;
+    }
+    .btn-log:hover {
+        background: #555;
+        color: #fff;
+    }
+</style>
+</head>
+<body>
+
+<button id="start">Start Scan</button>
+<button id="stop" disabled>Stop Scan</button>
+<button id="clear">Clear Results</button>
+<button id="export">Export JSON</button>
+<div id="status"></div>
+
+<hr>
+
+<table>
+<thead>
+<tr><th style="width:28px">#</th><th>Type</th><th>URL</th><th>Line:Col</th><th>Details</th><th>Action</th></tr>
+</thead>
+<tbody id="results"></tbody>
+</table>
+
+<script src="libs/babel.min.js"></script>
+<script src="libs/acorn.js"></script>
+<script src="libs/acorn-loose.js"></script>
+<script src="scanner.js"></script>
+<script src="panel.js"></script>
+</body>
+</html>
